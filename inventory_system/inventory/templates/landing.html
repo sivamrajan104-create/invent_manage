@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DashStack | Unified Logistics Intelligence</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        :root {
+            --bg: #000a0f;
+            --accent: #00F2FF;
+            --accent-glow: rgba(0, 242, 255, 0.4);
+            --glass: rgba(10, 25, 30, 0.7);
+            --border: rgba(0, 242, 255, 0.2);
+            --text-main: #FFFFFF;
+            --text-dim: #94A3B8;
+            --error-red: #ff4d4d;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
+        
+        body { 
+            background-color: var(--bg); 
+            color: var(--text-main); 
+            height: 100vh; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            overflow: hidden;
+            perspective: 1000px;
+        }
+
+        /* CORNER LOGO */
+        .corner-title {
+            position: absolute;
+            top: 40px;
+            left: 40px;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+        }
+
+        .logo-box {
+            width: 40px;
+            height: 40px;
+            background: var(--accent);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #000;
+            box-shadow: 0 0 20px var(--accent-glow);
+        }
+
+        .corner-title span {
+            font-weight: 800;
+            font-size: 20px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: var(--text-main);
+        }
+
+        /* 3D PERSPECTIVE GRID BACKGROUND */
+        .bg-wrap {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1;
+            background: radial-gradient(circle at 50% 50%, #001a1d 0%, #000000 100%);
+        }
+        
+        .grid-plane {
+            position: absolute; width: 200%; height: 200%; bottom: -50%; left: -50%;
+            background-image: 
+                linear-gradient(var(--border) 1px, transparent 1px),
+                linear-gradient(90deg, var(--border) 1px, transparent 1px);
+            background-size: 60px 60px;
+            transform: rotateX(60deg);
+            animation: moveGrid 20s linear infinite;
+        }
+
+        @keyframes moveGrid {
+            from { background-position: 0 0; }
+            to { background-position: 0 480px; }
+        }
+
+        .portal-glow {
+            position: absolute;
+            width: 400px; height: 500px;
+            background: var(--accent);
+            filter: blur(120px);
+            opacity: 0.15;
+            z-index: 0;
+            top: 20%; left: 40%;
+        }
+
+        .container {
+            width: 95%; max-width: 1000px; 
+            background: var(--glass); 
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border); 
+            border-radius: 30px; 
+            padding: 60px;
+            display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 40px; 
+            position: relative;
+            z-index: 10;
+            box-shadow: 0 0 50px rgba(0, 242, 255, 0.1);
+        }
+
+        .showcase h1 { 
+            font-size: 42px; 
+            font-weight: 800; 
+            margin-bottom: 20px; 
+            line-height: 1.1;
+            min-height: 92px;
+        }
+        
+        .typing-text::after {
+            content: '|';
+            animation: blink 0.7s infinite;
+            color: var(--accent);
+            margin-left: 4px;
+        }
+
+        @keyframes blink { 50% { opacity: 0; } }
+
+        .showcase p { color: var(--text-dim); font-size: 15px; line-height: 1.6; margin-bottom: 40px; }
+
+        .viz-card { background: rgba(0,0,0,0.3); border: 1px solid var(--border); border-radius: 15px; padding: 25px; position: relative; }
+        .viz-header { display: flex; justify-content: space-between; margin-bottom: 25px; font-weight: 800; font-size: 14px; color: var(--text-main); }
+        .viz-bars { display: flex; align-items: flex-end; gap: 10px; height: 100px; }
+        .bar { 
+            flex: 1; 
+            background: linear-gradient(to top, var(--accent), #00A3FF); 
+            border-radius: 2px; 
+            opacity: 0.9; 
+            animation: grow 1.5s ease-out forwards; 
+            box-shadow: 0 0 10px var(--accent-glow);
+        }
+        
+        @keyframes grow { from { height: 0; } to { height: var(--h); } }
+
+        /* AUTH PANEL */
+        .auth-panel {
+            border-left: 1px solid var(--border);
+            padding-left: 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+
+        .score-badge { display: flex; align-items: center; gap: 15px; margin-bottom: 30px; }
+        .score { 
+            background: var(--accent); color: #000; padding: 12px 18px; border-radius: 12px; 
+            font-weight: 800; font-size: 28px; box-shadow: 0 0 30px var(--accent-glow);
+        }
+
+        .login-trigger {
+            width: 100%; padding: 22px; background: var(--accent); color: #000;
+            border: none; border-radius: 15px; font-weight: 800; font-size: 16px;
+            cursor: pointer; display: flex; align-items: center; justify-content: center;
+            gap: 12px; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            margin-top: 20px;
+        }
+        .login-trigger:hover { transform: translateY(-5px) scale(1.02); box-shadow: 0 15px 40px var(--accent-glow); }
+
+        /* MODAL */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85); backdrop-filter: blur(10px);
+            display: none; align-items: center; justify-content: center; z-index: 1000;
+        }
+        .modal-content {
+            background: var(--glass); border: 1px solid var(--accent); padding: 40px;
+            border-radius: 25px; width: 420px; text-align: center;
+            box-shadow: 0 0 100px rgba(0, 242, 255, 0.2);
+            position: relative;
+        }
+
+        /* NEW ERROR STYLES */
+        .error-box {
+            background: rgba(255, 77, 77, 0.1);
+            border: 1px solid var(--error-red);
+            color: var(--error-red);
+            padding: 12px;
+            border-radius: 10px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            display: none; /* Hidden by default */
+            align-items: center;
+            gap: 8px;
+            animation: shake 0.4s ease-in-out;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        .modal-content h2 { margin-bottom: 10px; font-weight: 800; color: var(--accent); text-transform: uppercase; letter-spacing: 2px; }
+        .modal-subtitle { color: var(--text-dim); font-size: 13px; margin-bottom: 20px; display: block; }
+        
+        .input-group { margin-bottom: 20px; text-align: left; }
+        .input-group label { display: block; font-size: 11px; text-transform: uppercase; margin-bottom: 8px; color: var(--accent); letter-spacing: 1px; font-weight: 800; }
+        .input-group input { 
+            width: 100%; padding: 15px; background: rgba(255,255,255,0.05); border: 1px solid var(--border); 
+            border-radius: 10px; color: white; outline: none; transition: 0.3s;
+        }
+        .input-group input:focus { border-color: var(--accent); background: rgba(255,255,255,0.08); }
+        .input-group input.invalid { border-color: var(--error-red); background: rgba(255, 77, 77, 0.05); }
+
+        .form-footer { margin-top: 25px; font-size: 13px; color: var(--text-dim); }
+        .form-footer span { color: var(--accent); cursor: pointer; font-weight: 800; text-decoration: underline; margin-left: 5px; }
+
+        #registerFields { display: none; }
+
+        @media (max-width: 800px) {
+            .container { grid-template-columns: 1fr; padding: 30px; }
+            .auth-panel { border-left: none; border-top: 1px solid var(--border); padding-left: 0; padding-top: 30px; }
+        }
+    </style>
+</head>
+<body>
+
+    <a href="#" class="corner-title">
+        <div class="logo-box"><i data-lucide="layers" size="24"></i></div>
+        <span>DashStack</span>
+    </a>
+
+    <div class="bg-wrap">
+        <div class="grid-plane"></div>
+        <div class="portal-glow"></div>
+    </div>
+
+    <div class="container">
+        <div class="showcase">
+            <h1 id="typing-headline" class="typing-text"></h1>
+            <p>Deploy the national integrated intelligence suite for real-time trade monitoring and autonomous terminal logistics.</p>
+            <div class="viz-card">
+                <div class="viz-header"><span>Viz Box</span><span style="color: var(--accent);">1500 UNITS</span></div>
+                <div class="viz-bars">
+                    <div class="bar" style="--h: 20%;"></div><div class="bar" style="--h: 65%;"></div><div class="bar" style="--h: 30%;"></div>
+                    <div class="bar" style="--h: 55%;"></div><div class="bar" style="--h: 40%;"></div><div class="bar" style="--h: 85%;"></div>
+                    <div class="bar" style="--h: 95%;"></div><div class="bar" style="--h: 45%;"></div><div class="bar" style="--h: 75%;"></div>
+                    <div class="bar" style="--h: 60%;"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="auth-panel">
+            <div class="score-badge">
+                <div class="score">70</div>
+                <div style="font-weight: 800; font-size: 22px; text-align: left;">DashStack<br><span style="font-size: 12px; color: var(--accent); opacity: 0.7;">ACTIVE CORE</span></div>
+            </div>
+            <p style="font-size: 13px; color: var(--text-dim); margin-bottom: 10px;">Authorized Personnel Only.</p>
+            <button class="login-trigger" id="openModal">Launch Intelligence Suite <i data-lucide="shield-check"></i></button>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="loginModal">
+        <div class="modal-content">
+            <h2 id="modalTitle">Terminal Access</h2>
+            <span class="modal-subtitle" id="modalSubtitle">Please verify your clearance credentials.</span>
+            
+            <div id="errorBox" class="error-box">
+                <i data-lucide="alert-circle" size="16"></i>
+                <span id="errorMessage">Access Denied: Invalid Credentials</span>
+            </div>
+
+            <form id="authForm" method="POST" action="{% url 'login' %}" onsubmit="return validateForm(event)">
+                {% csrf_token %}
+                
+                <div class="input-group">
+                    <label>Terminal Identity</label>
+                    <input type="text" id="username" name="username" placeholder="Username" >
+                </div>
+
+                <div id="registerFields">
+                    <div class="input-group">
+                        <label>Email Address</label>
+                        <input type="email" id="email" name="email" placeholder="name@domain.com">
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label>Access Key</label>
+                    <input type="password" id="password" name="password" placeholder="••••••••" >
+                </div>
+
+                <button type="submit" class="login-trigger" id="submitBtn">Initialize Session</button>
+                
+                <div class="form-footer" id="toggleText">
+                    New operative? <span onclick="toggleAuthMode(true)">Register for Clearance</span>
+                </div>
+
+                <p id="closeModal" style="margin-top: 20px; font-size: 11px; color: var(--text-dim); cursor: pointer; text-transform: uppercase;">Abort Access Request</p>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        lucide.createIcons();
+
+        // Typing Animation Logic
+        const text = "Unified\nLogistics Intelligence";
+        const headlineElement = document.getElementById('typing-headline');
+        let index = 0;
+        function type() {
+            if (index < text.length) {
+                headlineElement.innerHTML += text.charAt(index) === "\n" ? "<br>" : text.charAt(index);
+                index++; setTimeout(type, 100);
+            }
+        }
+        window.onload = type;
+
+        // Modal Logic
+        const modal = document.getElementById('loginModal');
+        const openBtn = document.getElementById('openModal');
+        const closeBtn = document.getElementById('closeModal');
+        const errorBox = document.getElementById('errorBox');
+        const errorMessage = document.getElementById('errorMessage');
+
+        openBtn.onclick = () => modal.style.display = 'flex';
+        closeBtn.onclick = () => {
+            modal.style.display = 'none';
+            hideError();
+        };
+
+        // UI Error Handling
+        function showError(msg) {
+            errorMessage.innerText = msg;
+            errorBox.style.display = 'flex';
+        }
+
+        function hideError() {
+            errorBox.style.display = 'none';
+            document.querySelectorAll('input').forEach(i => i.classList.remove('invalid'));
+        }
+
+        // CLIENT SIDE VALIDATION (Empty fields)
+        function validateForm(e) {
+            hideError();
+            const user = document.getElementById('username');
+            const pass = document.getElementById('password');
+            let valid = true;
+
+            if (!user.value.trim()) {
+                user.classList.add('invalid');
+                valid = false;
+            }
+            if (!pass.value.trim()) {
+                pass.classList.add('invalid');
+                valid = false;
+            }
+
+            if (!valid) {
+                e.preventDefault();
+                showError("Required fields are empty.");
+                return false;
+            }
+            return true;
+        }
+
+        // DJANGO MESSAGE INTEGRATION
+        const params = new URLSearchParams(window.location.search);
+        
+        // If your Django view returns a context variable 'error', you can render it here:
+        // Or if you use the URL param method:
+        if (params.get('error')) {
+            modal.style.display = 'flex';
+            showError("Access Denied: Unauthorized Credentials");
+        }
+
+        if (params.get('registered') === '1') {
+            modal.style.display = 'flex';
+            toggleAuthMode(false);
+        }
+
+        function toggleAuthMode(isRegister) {
+            hideError();
+            const form = document.getElementById('authForm');
+            const registerFields = document.getElementById('registerFields');
+            const submitBtn = document.getElementById('submitBtn');
+            const toggleText = document.getElementById('toggleText');
+
+            if (isRegister) {
+                form.action = "{% url 'register' %}";
+                document.getElementById('modalTitle').innerText = "Register Operative";
+                registerFields.style.display = 'block';
+                submitBtn.innerText = "Create Identity";
+                toggleText.innerHTML = 'Already registered? <span onclick="toggleAuthMode(false)">Login to Terminal</span>';
+            } else {
+                form.action = "{% url 'login' %}";
+                document.getElementById('modalTitle').innerText = "Terminal Access";
+                registerFields.style.display = 'none';
+                submitBtn.innerText = "Initialize Session";
+                toggleText.innerHTML = 'New operative? <span onclick="toggleAuthMode(true)">Register for Clearance</span>';
+            }
+        }
+    </script>
+</body>
+</html>

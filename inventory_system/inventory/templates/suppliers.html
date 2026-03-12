@@ -1,0 +1,115 @@
+{% extends 'admin_dashboard.html' %}
+
+{% block content %}
+<style>
+    /* ... (Keeping your existing styles) ... */
+    .supplier-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 25px;
+        margin-top: 10px;
+    }
+
+    .supplier-card {
+        background: var(--white);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        padding: 24px;
+        transition: all 0.3s ease;
+        position: relative;
+    }
+
+    .supplier-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0px 10px 30px rgba(72, 128, 255, 0.08);
+        border-color: var(--primary);
+    }
+
+    .supplier-avatar {
+        width: 48px; height: 48px;
+        background: var(--primary-light);
+        color: var(--primary);
+        border-radius: 12px;
+        display: flex; align-items: center; justify-content: center;
+        font-weight: 800; font-size: 18px;
+    }
+
+    .supplier-info-row {
+        display: flex; align-items: center; gap: 10px;
+        margin-bottom: 12px; color: var(--text-muted); font-size: 14px;
+    }
+
+    .card-actions {
+        margin-top: 20px;
+        padding-top: 15px;
+        border-top: 1px solid #F1F4F9;
+        display: flex;
+        justify-content: flex-end;
+    }
+
+    /* Delete Button Styling */
+    .btn-delete {
+        color: #F93C65;
+        background: none;
+        border: none;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 13px;
+        font-weight: 600;
+        transition: 0.2s;
+        padding: 5px 10px;
+        border-radius: 6px;
+    }
+
+    .btn-delete:hover {
+        background: #FFF0F0;
+    }
+</style>
+
+<div class="page-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+    <div>
+        <h1 style="font-size: 28px; font-weight: 800; color: var(--text-main);">Suppliers Directory</h1>
+        <p style="color: var(--text-muted); font-size: 14px;">Manage your supply chain partners and contact information.</p>
+    </div>
+    <a href="{% url 'add_supplier' %}" class="btn-add-supplier" style="background: var(--primary); color: white; padding: 12px 24px; border-radius: var(--radius-md); text-decoration: none; font-weight: 700; display: flex; align-items: center; gap: 8px;">
+        <i data-lucide="plus-circle" size="18"></i> Add New Supplier
+    </a>
+</div>
+
+<div class="supplier-grid">
+    {% for supplier in suppliers %}
+    <div class="supplier-card">
+        <div class="supplier-header" style="display: flex; align-items: center; gap: 15px; margin-bottom: 20px;">
+            <div class="supplier-avatar">{{ supplier.name|slice:":1"|upper }}</div>
+            <div>
+                <h3 style="font-size: 18px; font-weight: 700; color: var(--text-main);">{{ supplier.name }}</h3>
+                <span class="status-pill status-high" style="font-size: 10px; background: #E6FFF5; color: #00B69B; padding: 2px 8px; border-radius: 10px;">Active Partner</span>
+            </div>
+        </div>
+
+        <div class="supplier-info-row"><i data-lucide="user" size="16"></i><span>{{ supplier.contact_person }}</span></div>
+        <div class="supplier-info-row"><i data-lucide="mail" size="16"></i><span>{{ supplier.email }}</span></div>
+        <div class="supplier-info-row"><i data-lucide="phone" size="16"></i><span>{{ supplier.phone }}</span></div>
+
+        <div class="card-actions">
+            <a href="{% url 'delete_supplier' supplier.id %}" 
+               class="btn-delete" 
+               onclick="return confirm('Are you sure you want to delete {{ supplier.name }}? This action cannot be undone.')">
+                <i data-lucide="trash-2" size="16"></i> Delete Supplier
+            </a>
+        </div>
+    </div>
+    {% empty %}
+    <div style="grid-column: 1 / -1; text-align: center; padding: 60px; background: var(--white); border-radius: var(--radius-lg); border: 1px solid var(--border);">
+        <i data-lucide="truck" size="48" style="color: var(--text-muted); opacity: 0.3; margin-bottom: 15px;"></i>
+        <p style="color: var(--text-muted);">No suppliers registered yet.</p>
+    </div>
+    {% endfor %}
+</div>
+
+<script>
+    lucide.createIcons();
+</script>
+{% endblock %}

@@ -1,0 +1,27 @@
+{% extends 'admin_dashboard.html' %}
+{% block content %}
+<div class="page-header">
+    <h1 style="font-size: 28px; font-weight: 800;">Analytics Reports</h1>
+</div>
+
+<div class="kpi-grid">
+    <div class="card">
+    <p class="kpi-label">Gross Revenue</p>
+    <p class="kpi-value">₹{{ total_revenue }}</p> 
+    <p class="kpi-trend" style="color: #00B69B;"><i data-lucide="trending-up"></i> +8.5%</p>
+</div>
+    <div class="card">
+        <p class="kpi-label">Current Stock Value</p>
+        <p class="kpi-value">{{ total_stock }} Items</p>
+        <p class="kpi-trend">Stable</p>
+    </div>
+</div>
+
+<div class="card" style="height: 300px; display: flex; align-items: center; justify-content: center; border: 2px dashed var(--border);">
+    <div style="text-align: center; color: var(--text-muted);">
+        <i data-lucide="bar-chart-3" size="48" style="margin-bottom: 10px; opacity: 0.3;"></i>
+        <p>Advanced Charting Module Loading...</p>
+    </div>
+</div>
+<script>lucide.createIcons();</script>
+{% endblock %}

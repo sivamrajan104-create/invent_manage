@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard | DashStack Premium</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        :root {
+            --primary: #4880FF;
+            --primary-light: rgba(72, 128, 255, 0.1);
+            --bg-body: #F5F7FB;
+            --sidebar-bg: #1A1D21;
+            --text-main: #202224;
+            --text-muted: #828282;
+            --white: #FFFFFF;
+            --border: #E0E4EC;
+            --radius-lg: 16px;
+            --radius-md: 12px;
+            --shadow: 0px 10px 30px rgba(0, 0, 0, 0.03);
+            --success: #00B69B;
+            --danger: #F93C65;
+            --warning: #FFB700;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        body { background-color: var(--bg-body); display: flex; min-height: 100vh; color: var(--text-main); }
+
+        /* Sidebar */
+        .sidebar { width: 260px; background: var(--sidebar-bg); height: 100vh; position: fixed; padding: 30px 20px; color: #fff; z-index: 100; }
+        .logo { font-size: 22px; font-weight: 800; color: var(--primary); display: flex; align-items: center; gap: 12px; padding: 0 15px 40px; }
+        .nav-menu { list-style: none; height: calc(100% - 120px); display: flex; flex-direction: column; }
+        .nav-item { margin-bottom: 8px; }
+        .nav-link { display: flex; align-items: center; gap: 14px; padding: 12px 15px; color: #A0AEC0; text-decoration: none; border-radius: var(--radius-md); transition: 0.3s; font-weight: 500; }
+        .nav-link:hover, .nav-link.active { background: var(--primary-light); color: var(--primary); }
+        .logout-section { margin-top: auto; padding-bottom: 20px; }
+
+        /* Main Content */
+        .main-content { margin-left: 260px; flex: 1; padding: 30px 40px; width: calc(100% - 260px); }
+        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; }
+        .search-bar { background: var(--white); border: 1px solid var(--border); padding: 10px 20px; border-radius: 30px; display: flex; align-items: center; gap: 12px; width: 400px; box-shadow: var(--shadow); }
+        .search-bar input { border: none; outline: none; width: 100%; font-size: 14px; }
+
+        .header-actions { display: flex; align-items: center; gap: 20px; }
+        .icon-btn { background: var(--white); border: 1px solid var(--border); width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; position: relative; }
+        .notification-dot { position: absolute; top: 10px; right: 10px; width: 8px; height: 8px; background: var(--danger); border-radius: 50%; border: 2px solid #fff; }
+
+        .user-profile { display: flex; align-items: center; gap: 12px; padding-left: 20px; border-left: 1px solid var(--border); }
+        .user-profile img { width: 44px; height: 44px; border-radius: 12px; object-fit: cover; box-shadow: var(--shadow); }
+
+        /* KPI Grid */
+        .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 30px; }
+        .card { background: var(--white); border-radius: var(--radius-lg); padding: 24px; box-shadow: var(--shadow); border: 1px solid rgba(255, 255, 255, 0.8); }
+        .kpi-card { display: flex; flex-direction: column; transition: transform 0.2s; }
+        .kpi-card:hover { transform: translateY(-3px); }
+        .kpi-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .kpi-icon-box { width: 45px; height: 45px; border-radius: 12px; display: flex; align-items: center; justify-content: center; }
+        .kpi-label { font-size: 14px; color: var(--text-muted); font-weight: 600; }
+        .kpi-value { font-size: 24px; font-weight: 800; margin: 5px 0; }
+
+        /* Charts Section */
+        .charts-row { display: grid; grid-template-columns: 1.8fr 1.2fr; gap: 25px; margin-bottom: 30px; }
+        .chart-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .chart-container { position: relative; height: 300px; width: 100%; }
+
+        /* Timeline Integration */
+        .timeline { position: relative; padding-left: 30px; max-height: 350px; overflow-y: auto; }
+        .timeline::before { content: ''; position: absolute; left: 7px; top: 0; bottom: 0; width: 2px; background: #F1F4F9; }
+        .timeline-item { position: relative; margin-bottom: 25px; font-size: 13px; }
+        .timeline-dot { position: absolute; left: -30px; width: 16px; height: 16px; border-radius: 50%; background: var(--white); border: 3px solid var(--primary); z-index: 2; }
+        .timeline-time { color: var(--text-muted); font-size: 11px; margin-top: 4px; display: block; }
+
+        /* Table Design */
+        .data-table { width: 100%; border-collapse: collapse; }
+        .data-table th { text-align: left; padding: 15px; background: #F8F9FC; font-size: 12px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+        .data-table td { padding: 15px; border-bottom: 1px solid #F1F4F9; font-size: 14px; vertical-align: middle; }
+        .status-pill { padding: 5px 12px; border-radius: 20px; font-size: 11px; font-weight: 700; display: inline-block; }
+        .status-high { background: #E6FFF5; color: var(--success); }
+        .status-low { background: #FFF0F0; color: var(--danger); }
+        .status-warning { background: #FFF9E6; color: var(--warning); }
+    </style>
+</head>
+<body>
+
+    <aside class="sidebar">
+        <div class="logo"><i data-lucide="zap" fill="currentColor"></i><span>DashStack</span></div>
+        <ul class="nav-menu">
+            <li class="nav-item"><a href="{% url 'dashboard' %}" class="nav-link active"><i data-lucide="layout-grid"></i> Dashboard</a></li>
+            <li class="nav-item"><a href="{% url 'product_list' %}" class="nav-link"><i data-lucide="package"></i> Products</a></li>
+            <li class="nav-item"><a href="{% url 'admin_stock_requests' %}" class="nav-link"><i data-lucide="layers"></i> Stock Requests</a></li>
+            <li class="nav-item"><a href="{% url 'supplier_list' %}" class="nav-link"><i data-lucide="truck"></i> Suppliers</a></li>
+            <li class="nav-item"><a href="{% url 'add_purchase' %}" class="nav-link"><i data-lucide="shopping-cart"></i> Purchases</a></li>
+            <li class="nav-item"><a href="{% url 'sales_list' %}" class="nav-link"><i data-lucide="bar-chart-3"></i> Sales</a></li>
+            <li class="nav-item"><a href="{% url 'user_list' %}" class="nav-link"><i data-lucide="users"></i> Users</a></li>
+            <li class="nav-item"><a href="{% url 'report_view' %}" class="nav-link"><i data-lucide="file-text"></i> Reports</a></li>
+            <div class="logout-section">
+                <li class="nav-item"><a href="{% url 'landing' %}" class="nav-link" style="color: var(--danger);"><i data-lucide="log-out"></i> Logout</a></li>
+            </div>
+        </ul>
+    </aside>
+
+    <main class="main-content">
+        <header>
+            <div class="search-bar">
+                <i data-lucide="search" size="18" color="#828282"></i>
+                <input type="text" id="global-search" placeholder="Search operational data...">
+            </div>
+            
+            <div class="header-actions">
+                <div class="icon-btn" id="notification-bell">
+                    <i data-lucide="bell" size="20"></i>
+                    {% if low_stock_count > 0 %}<div class="notification-dot"></div>{% endif %}
+                </div>
+                
+                <div class="user-profile">
+                    <div style="text-align: right; margin-right: 12px;">
+                        <p style="font-weight: 700; font-size: 14px;">{{ request.user.username }}</p>
+                        <p style="font-size: 12px; color: var(--text-muted);">Administrator</p>
+                    </div>
+                    <img src="https://ui-avatars.com/api/?name={{ request.user.username }}&background=4880FF&color=fff" alt="Profile">
+                </div>
+            </div>
+        </header>
+
+        {% block content %}
+        <div class="kpi-grid">
+            <div class="card kpi-card">
+                <div class="kpi-top">
+                    <span class="kpi-label">Inventory Volume</span>
+                    <div class="kpi-icon-box" style="background: #E5EDFF; color: #4880FF;"><i data-lucide="box"></i></div>
+                </div>
+                <p class="kpi-value">{{ products.count }}</p>
+                <span style="color: var(--success); font-size: 12px; font-weight: 600;">System Active</span>
+            </div>
+
+            <div class="card kpi-card">
+                <div class="kpi-top">
+                    <span class="kpi-label">Total Revenue</span>
+                    <div class="kpi-icon-box" style="background: #FFF0F0; color: #F93C65;"><i data-lucide="banknote"></i></div>
+                </div>
+                <p class="kpi-value">₹{{ total_sales|default:"0" }}</p>
+                <span style="color: var(--text-muted); font-size: 12px;">Accumulated Total</span>
+            </div>
+
+           
+
+            <div class="card kpi-card" style="{% if low_stock_count > 0 %}border: 1px solid rgba(249, 60, 101, 0.3);{% endif %}">
+                <div class="kpi-top">
+                    <span class="kpi-label">Stock Alerts</span>
+                    <div class="kpi-icon-box" style="background: #FFF9E6; color: #FFB700;"><i data-lucide="alert-circle"></i></div>
+                </div>
+                <p class="kpi-value">{{ low_stock_count|default:"0" }}</p>
+                <span style="color: var(--danger); font-size: 12px; font-weight: 600;">Reorder Needed</span>
+            </div>
+        </div>
+
+        <div class="charts-row">
+            <div class="card">
+                <div class="chart-header">
+                    <h3>Revenue Stream Analysis</h3>
+                    <div style="font-size: 12px; color: var(--text-muted);">Past 6 Months</div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="salesTrendChart"></canvas>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="chart-header"><h3>Stock Allocation</h3></div>
+                <div style="height: 250px;">
+                    <canvas id="inventoryDoughnut"></canvas>
+                </div>
+                <p style="text-align: center; font-size: 11px; color: var(--text-muted); margin-top: 15px; font-weight: 600;">Category-wise Distribution</p>
+            </div>
+        </div>
+
+        <div class="charts-row" style="grid-template-columns: 1fr 2fr;">
+            <div class="card">
+                <div class="chart-header"><h3>Live Operations</h3></div>
+                <div class="timeline">
+                    {% for sale in recent_sales|slice:":5" %}
+                    <div class="timeline-item">
+                        <div class="timeline-dot"></div>
+                        <strong>New Sale: {{ sale.product.name }}</strong>
+                        <p style="color: var(--text-muted); margin-top: 2px;">Quantity: {{ sale.quantity }}</p>
+                        <span class="timeline-time">{{ sale.created_at|timesince }} ago</span>
+                    </div>
+                    {% empty %}
+                    <div class="timeline-item">
+                        <div class="timeline-dot" style="border-color: var(--text-muted);"></div>
+                        <strong>No recent transactions</strong>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="chart-header">
+                    <h3>Inventory Health Monitor</h3>
+                    <a href="{% url 'product_list' %}" style="font-size: 12px; color: var(--primary); text-decoration: none; font-weight: 600;">View All</a>
+                </div>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Asset Name</th>
+                            <th>SKU</th>
+                            <th>Status Index</th>
+                            <th>Available</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for product in products|slice:":5" %}
+                        <tr>
+                            <td style="font-weight: 700;">{{ product.name }}</td>
+                            <td style="color: var(--text-muted); font-family: monospace;">{{ product.sku }}</td>
+                            <td>
+                                {% if product.quantity <= 5 %}
+                                <span class="status-pill status-low">Critical</span>
+                                {% elif product.quantity <= 15 %}
+                                <span class="status-pill status-warning">Warning</span>
+                                {% else %}
+                                <span class="status-pill status-high">Stable</span>
+                                {% endif %}
+                            </td>
+                            <td><strong style="color: var(--text-main);">{{ product.quantity }}</strong> <small>Units</small></td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="4" style="text-align:center; padding: 40px; color: var(--text-muted);">Vault empty. No assets found.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% endblock %}
+    </main>
+
+    {{ trend_labels|json_script:"trend-labels-data" }}
+    {{ trend_values|json_script:"trend-values-data" }}
+    {{ category_labels|json_script:"cat-labels-data" }}
+    {{ category_values|json_script:"cat-values-data" }}
+
+    <script>
+    // 1. Initialize Lucide Icons
+    lucide.createIcons();
+
+    // 2. Data Parsing from JSON Scripts
+    const trendLabels = JSON.parse(document.getElementById('trend-labels-data').textContent || '[]');
+    const trendValues = JSON.parse(document.getElementById('trend-values-data').textContent || '[]');
+    const catLabels = JSON.parse(document.getElementById('cat-labels-data').textContent || '[]');
+    const catValues = JSON.parse(document.getElementById('cat-values-data').textContent || '[]');
+
+    // 3. Sales Trend Chart with "Crosshair" Line Representation
+    const salesCtx = document.getElementById('salesTrendChart').getContext('2d');
+    
+    // Create Gradient for the line area
+    const gradient = salesCtx.createLinearGradient(0, 0, 0, 300);
+    gradient.addColorStop(0, 'rgba(72, 128, 255, 0.3)');
+    gradient.addColorStop(1, 'rgba(72, 128, 255, 0.01)');
+
+    new Chart(salesCtx, {
+        type: 'line',
+        data: {
+            labels: trendLabels.length ? trendLabels : ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+            datasets: [{
+                label: 'Revenue',
+                data: trendValues.length ? trendValues : [0, 0, 0, 0, 0, 0],
+                borderColor: '#4880FF',
+                backgroundColor: gradient,
+                fill: true,
+                tension: 0.4,
+                borderWidth: 3,
+                pointRadius: 2,
+                pointHoverRadius: 6,
+                pointHoverBackgroundColor: '#4880FF',
+                pointHoverBorderColor: '#fff',
+                pointHoverBorderWidth: 2,
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: {
+                intersect: false,
+                mode: 'index',
+            },
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    backgroundColor: '#1A1D21',
+                    padding: 12,
+                    titleFont: { size: 14, weight: 'bold' },
+                    callbacks: {
+                        label: (context) => ` ₹${context.parsed.y.toLocaleString()}`
+                    }
+                }
+            },
+            scales: { 
+                x: { grid: { display: false } },
+                y: { 
+                    beginAtZero: true, 
+                    grid: { color: '#F1F4F9', drawBorder: false },
+                    ticks: { callback: value => '₹' + value.toLocaleString() } 
+                }
+            }
+        },
+        // Custom Plugin to draw the vertical "Line Representation" on hover
+        plugins: [{
+            afterDraw: chart => {
+                if (chart.tooltip?._active?.length) {
+                    let x = chart.tooltip._active[0].element.x;
+                    let yAxis = chart.scales.y;
+                    let ctx = chart.ctx;
+                    ctx.save();
+                    ctx.beginPath();
+                    ctx.moveTo(x, yAxis.top);
+                    ctx.lineTo(x, yAxis.bottom);
+                    ctx.lineWidth = 1;
+                    ctx.strokeStyle = 'rgba(72, 128, 255, 0.4)';
+                    ctx.setLineDash([5, 5]); // Dashed line effect
+                    ctx.stroke();
+                    ctx.restore();
+                }
+            }
+        }]
+    });
+
+    // 4. Inventory Doughnut Chart
+    const invCtx = document.getElementById('inventoryDoughnut').getContext('2d');
+    new Chart(invCtx, {
+        type: 'doughnut',
+        data: {
+            labels: catLabels,
+            datasets: [{
+                data: catValues,
+                backgroundColor: ['#4880FF', '#00B69B', '#FFB700', '#F93C65', '#828282'],
+                borderWidth: 0,
+                hoverOffset: 10
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            cutout: '80%',
+            plugins: { 
+                legend: { 
+                    position: 'bottom', 
+                    labels: { usePointStyle: true, boxWidth: 8, font: { size: 11 } } 
+                } 
+            }
+        }
+    });
+
+    // 5. Active Search Bar Logic
+    const searchInput = document.getElementById('global-search');
+    searchInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            const query = searchInput.value.trim();
+            if (query) {
+                // Redirects to product list with a search parameter
+                window.location.href = `{% url 'product_list' %}?q=${encodeURIComponent(query)}`;
+            }
+        }
+    });
+
+    // 6. Active Notification Logic
+    const bell = document.getElementById('notification-bell');
+    bell.addEventListener('click', () => {
+        const count = "{{ low_stock_count|default:0 }}";
+        if (parseInt(count) > 0) {
+            // You can replace this with a modern modal/dropdown
+            alert(`Attention: There are ${count} items below their stock threshold. Please review the Inventory Health table.`);
+        } else {
+            alert('All systems normal. No stock alerts.');
+        }
+    });
+</script>
+</body>
+</html>
+
+        

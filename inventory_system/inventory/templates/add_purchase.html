@@ -1,0 +1,143 @@
+{% extends 'admin_dashboard.html' %}
+
+{% block content %}
+<style>
+    /* New Layout Grid */
+    .purchase-grid {
+        display: grid;
+        grid-template-columns: 1fr 320px;
+        gap: 30px;
+        align-items: start;
+    }
+
+    .form-container { max-width: 100%; padding: 0; }
+    .form-header { text-align: left; margin-bottom: 30px; }
+
+    .form-group { margin-bottom: 20px; }
+    .form-group label { font-size: 13px; font-weight: 700; color: var(--text-main); margin-bottom: 6px; display: flex; align-items: center; gap: 8px; }
+    
+    .form-group input, .form-group select {
+        width: 100%; padding: 12px; border: 1px solid var(--border);
+        border-radius: 8px; background: #F8F9FC; outline: none; transition: 0.3s;
+    }
+
+    .form-group input:focus { border-color: var(--primary); background: #fff; box-shadow: 0 0 0 3px var(--primary-light); }
+
+    /* Transaction Preview Box */
+    .preview-card {
+        background: var(--primary);
+        color: white;
+        padding: 20px;
+        border-radius: 12px;
+        margin-top: 20px;
+        box-shadow: 0 10px 20px rgba(72, 128, 255, 0.2);
+    }
+
+    /* Supplier Report Styles */
+    .report-card { padding: 20px; border-radius: 12px; }
+    .supplier-row {
+        display: flex; justify-content: space-between; align-items: center;
+        padding: 12px 0; border-bottom: 1px solid #f0f0f0;
+    }
+</style>
+
+<div class="purchase-grid">
+    <div class="form-container">
+        <div class="form-header">
+            <div class="stock-step" style="justify-content: flex-start;">
+                <i data-lucide="file-text" size="14"></i> Procurement Module
+            </div>
+            <h1 style="font-size: 28px; font-weight: 800; color: var(--text-main);">Stock Inbound (Purchase)</h1>
+            <p style="color: var(--text-muted);">Record vendor transactions and update SKU quantity levels.</p>
+        </div>
+
+        <div class="card" style="padding: 30px;">
+            <form method="POST" id="purchaseForm">
+                {% csrf_token %}
+                
+                <div class="form-group">
+                    <label><i data-lucide="package" size="16"></i> Target Product</label>
+                    {{ form.product }}
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                    <div class="form-group">
+                        <label><i data-lucide="truck" size="16"></i> Authorized Supplier</label>
+                        {{ form.supplier }}
+                    </div>
+                    <div class="form-group">
+                        <label><i data-lucide="hash" size="16"></i> Quantity Received</label>
+                        {{ form.quantity }}
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label><i data-lucide="indian-rupee" size="16"></i> Unit Cost Price</label>
+                    {{ form.cost_price }}
+                </div>
+
+                <div class="preview-card">
+                    <div style="font-size: 12px; opacity: 0.8; text-transform: uppercase; letter-spacing: 1px;">Estimated Transaction Value</div>
+                    <div style="font-size: 32px; font-weight: 800;" id="live-total">₹ 0.00</div>
+                    <div style="margin-top: 10px; font-size: 11px; display: flex; align-items: center; gap: 5px;">
+                        <i data-lucide="shield-check" size="12"></i> 
+                        Auto-generating Purchase Receipt on Confirmation
+                    </div>
+                </div>
+
+                <div style="margin-top: 30px; display: flex; gap: 15px;">
+                    <button type="submit" class="btn-submit" style="flex: 2; justify-content: center;">
+                        <i data-lucide="check-circle" size="18"></i> Confirm & Generate PDF
+                    </button>
+                    <a href="{% url 'product_list' %}" class="btn-cancel" style="flex: 1; justify-content: center;">Discard</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="report-sidebar">
+        <div class="card report-card">
+            <h3 style="font-size: 16px; font-weight: 700; margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
+                <i data-lucide="trending-up" size="18" style="color: var(--primary);"></i>
+                Monthly Outflow
+            </h3>
+            
+            {% for item in supplier_report %}
+            <div class="supplier-row">
+                <div>
+                    <div style="font-weight: 700; font-size: 14px;">{{ item.name }}</div>
+                    <div style="font-size: 11px; color: var(--text-muted);">Monthly Total</div>
+                </div>
+                <div style="color: var(--primary); font-weight: 800;">₹{{ item.total_spent }}</div>
+            </div>
+            {% empty %}
+            <p style="font-size: 12px; color: var(--text-muted); text-align: center; padding: 20px;">No purchase history this month.</p>
+            {% endfor %}
+
+            <div style="margin-top: 20px; background: #F1F4F9; padding: 15px; border-radius: 8px; font-size: 12px; color: var(--text-muted);">
+                <i data-lucide="help-circle" size="14" style="vertical-align: middle;"></i> 
+                This report tracks total cash paid to vendors to help manage company liabilities.
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    lucide.createIcons();
+
+    // LIVE PREVIEW CALCULATION
+    const qtyField = document.querySelector('input[name="quantity"]');
+    const costField = document.querySelector('input[name="cost_price"]');
+    const totalLabel = document.getElementById('live-total');
+
+    function calculate() {
+        const q = parseFloat(qtyField.value) || 0;
+        const c = parseFloat(costField.value) || 0;
+        const total = q * c;
+        totalLabel.innerText = '₹ ' + total.toLocaleString('en-IN', {minimumFractionDigits: 2});
+    }
+
+    qtyField.addEventListener('input', calculate);
+    costField.addEventListener('input', calculate);
+</script>
+{% endblock %}

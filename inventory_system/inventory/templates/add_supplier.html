@@ -1,0 +1,132 @@
+{% extends 'admin_dashboard.html' %}
+
+{% block content %}
+<style>
+    /* Styling consistent with Product and Purchase pages */
+    .form-container {
+        max-width: 650px;
+        margin: 0 auto;
+        padding: 20px 0;
+    }
+
+    .form-header {
+        margin-bottom: 30px;
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    .form-group label {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--text-main);
+        margin-bottom: 8px;
+    }
+
+    /* Style the Django form widgets */
+    .form-group input {
+        width: 100%;
+        padding: 12px 16px;
+        border: 1px solid var(--border);
+        border-radius: var(--radius-md);
+        font-size: 14px;
+        background-color: #F8F9FC;
+        transition: 0.3s;
+        outline: none;
+    }
+
+    .form-group input:focus {
+        border-color: var(--primary);
+        background-color: white;
+        box-shadow: 0 0 0 4px var(--primary-light);
+    }
+
+    .btn-submit {
+        background: var(--primary);
+        color: white;
+        padding: 14px 28px;
+        border-radius: var(--radius-md);
+        border: none;
+        font-weight: 700;
+        font-size: 15px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        transition: 0.3s;
+    }
+
+    .btn-submit:hover {
+        background: #3366FF;
+        transform: translateY(-2px);
+    }
+
+    .btn-cancel {
+        padding: 14px 28px;
+        border-radius: var(--radius-md);
+        text-decoration: none;
+        color: var(--text-muted);
+        font-weight: 600;
+        font-size: 15px;
+        background: #F1F4F9;
+        display: inline-flex;
+        align-items: center;
+        transition: 0.3s;
+    }
+</style>
+
+<div class="form-container">
+    <div class="form-header">
+        <h1 style="font-size: 28px; font-weight: 800; color: var(--text-main);">Register New Supplier</h1>
+        <p style="color: var(--text-muted); font-size: 14px;">Add a new vendor to your supply chain network.</p>
+    </div>
+
+    <div class="card" style="padding: 35px; border-radius: var(--radius-lg);">
+        <form method="POST">
+            {% csrf_token %}
+            
+            <div class="form-group">
+                <label><i data-lucide="building-2" size="16"></i> Company/Supplier Name</label>
+                {{ form.name }}
+            </div>
+
+            <div class="form-group">
+                <label><i data-lucide="user" size="16"></i> Contact Person</label>
+                {{ form.contact_person }}
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                <div class="form-group">
+                    <label><i data-lucide="mail" size="16"></i> Email Address</label>
+                    {{ form.email }}
+                </div>
+                <div class="form-group">
+                    <label><i data-lucide="phone" size="16"></i> Phone Number</label>
+                    {{ form.phone }}
+                </div>
+            </div>
+
+            <div style="margin-top: 30px; display: flex; gap: 12px; justify-content: flex-end; border-top: 1px solid #f0f0f0; padding-top: 25px;">
+                <a href="{% url 'supplier_list' %}" class="btn-cancel">Cancel</a>
+                <button type="submit" class="btn-submit">
+                    <i data-lucide="check-circle" size="18"></i> Register Supplier
+                </button>
+            </div>
+        </form>
+    </div>
+    
+    <div style="margin-top: 20px; text-align: center; color: var(--text-muted); font-size: 13px; display: flex; align-items: center; justify-content: center; gap: 8px;">
+        <i data-lucide="shield-check" size="14"></i> 
+        Supplier details will be available in the Procurement module immediately.
+    </div>
+</div>
+
+<script>
+    // Initialize icons
+    lucide.createIcons();
+</script>
+{% endblock %}

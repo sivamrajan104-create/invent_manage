@@ -1,0 +1,102 @@
+{% extends 'admin_dashboard.html' %}
+
+{% block content %}
+<style>
+    .page-header { margin-bottom: 30px; }
+    .status-badge { padding: 5px 12px; border-radius: 20px; font-size: 11px; font-weight: 700; text-transform: uppercase; }
+    .status-approved { background: #E6FFF5; color: #00B69B; }
+    .status-rejected { background: #FFF0F0; color: #F93C65; }
+    
+    .btn-approve { background: #E6FFF5; color: #00B69B; padding: 6px 14px; border-radius: 20px; font-size: 11px; font-weight: 700; text-decoration: none; transition: 0.3s; }
+    .btn-approve:hover { background: #00B69B; color: white; }
+    .btn-reject { color: #F93C65; font-weight: 700; text-decoration: none; font-size: 11px; margin-left: 10px; }
+    
+    .section-title { font-size: 18px; font-weight: 700; margin-top: 40px; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+</style>
+
+<div class="page-header">
+    <h1 style="font-size: 28px; font-weight: 800; color: var(--text-main);">Inventory Management</h1>
+    <p style="color: var(--text-muted); font-size: 14px;">Review pending requests or track history.</p>
+</div>
+
+<div class="card">
+    <div class="chart-header" style="margin-bottom: 20px;">
+        <h3 style="font-size: 16px; font-weight: 700;">Action Required</h3>
+    </div>
+
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>Product Details</th>
+                <th>Quantity</th>
+                <th>Requested By</th>
+                <th>Priority</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for req in requests %}
+            <tr>
+                <td><strong>{{ req.product.name }}</strong></td>
+                <td>{{ req.quantity }} Units</td>
+                <td>{{ req.staff.username }}</td>
+                <td>
+                    {% if req.quantity > 50 %}<span class="status-pill status-low">High</span>{% else %}Normal{% endif %}
+                </td>
+                <td>
+                    <div style="display: flex; align-items: center;">
+                        <a href="{% url 'approve_stock_request' req.id %}" class="btn-approve">Approve</a>
+                        <a href="{% url 'reject_stock_request' req.id %}" class="btn-reject" onclick="return confirm('Reject this request?')">Reject</a>
+                    </div>
+                </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="5" style="text-align:center; padding:40px; color:var(--text-muted);">No pending requests found.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<div class="section-title">
+    <i data-lucide="history" size="20"></i> Request History
+</div>
+
+<div class="card" style="opacity: 0.9;">
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>Date Processed</th>
+                <th>Product</th>
+                <th>Quantity</th>
+                <th>User</th>
+                <th>Final Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for h in history %}
+            <tr>
+                <td style="font-size: 12px; color: var(--text-muted);">
+                    {{ h.approved_at|date:"M d, Y"|default:h.requested_at|date:"M d, Y" }}
+                </td>
+                <td>{{ h.product.name }}</td>
+                <td>{{ h.quantity }}</td>
+                <td>{{ h.staff.username }}</td>
+                <td>
+                    {% if h.status == 'Approved' %}
+                        <span class="status-badge status-approved">Approved</span>
+                    {% elif h.status == 'Rejected' %}
+                        <span class="status-badge status-rejected">Rejected</span>
+                    {% else %}
+                        <span class="status-badge" style="background: #eee;">{{ h.status }}</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="5" style="text-align:center; padding:40px; color:var(--text-muted);">No processed requests in history.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<script>lucide.createIcons();</script>
+{% endblock %}

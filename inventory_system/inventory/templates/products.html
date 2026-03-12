@@ -1,0 +1,150 @@
+{% extends 'admin_dashboard.html' %}
+
+{% block content %}
+<style>
+    /* Specific styles for the product page to match the dashboard exactly */
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+    }
+    
+    .btn-add {
+        background: var(--primary);
+        color: white;
+        padding: 12px 24px;
+        border-radius: var(--radius-md);
+        text-decoration: none;
+        font-weight: 700;
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transition: 0.3s;
+        box-shadow: 0 4px 12px rgba(72, 128, 255, 0.2);
+    }
+
+    .btn-add:hover {
+        background: #3366FF;
+        transform: translateY(-2px);
+    }
+
+    .product-img-slot {
+        width: 36px;
+        height: 36px;
+        background: #F1F4F9;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--text-muted);
+    }
+</style>
+
+<div class="page-header">
+    <div>
+        <h1 style="font-size: 28px; font-weight: 800; color: var(--text-main);">Product Inventory</h1>
+        <p style="color: var(--text-muted); font-size: 14px;">Manage your stock levels, pricing, and product catalog.</p>
+    </div>
+    <a href="{% url 'add_product' %}" class="btn-add">
+        <i data-lucide="plus-circle" size="18"></i> Add New Product
+    </a>
+</div>
+
+<div class="card">
+    <div class="chart-header" style="margin-bottom: 20px;">
+        <h3 style="font-size: 18px; font-weight: 700;">All Products</h3>
+        <div style="display: flex; gap: 10px;">
+            <i data-lucide="filter" size="18" style="cursor:pointer; color: var(--text-muted);"></i>
+            <i data-lucide="download" size="18" style="cursor:pointer; color: var(--text-muted);"></i>
+        </div>
+    </div>
+
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>SKU</th>
+                <th>Product Name</th>
+                <th>Category</th>
+                <th>Stock Level</th>
+                <th>Price</th>
+                <th>Status</th>
+                
+            </tr>
+        </thead>
+        <tbody>
+            {% for product in products %}
+            <tr>
+                <td style="font-weight: 600; color: var(--primary);">#{{ product.sku|default:"---" }}</td>
+                <td>
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <div class="product-img-slot">
+                            <i data-lucide="package" size="16"></i>
+                        </div>
+                        <span style="font-weight: 700;">{{ product.name }}</span>
+                    </div>
+                </td>
+                <td style="color: var(--text-muted);">{{ product.category.name }}</td>
+                <td>
+                    <span style="font-weight: 600;">{{ product.quantity }}</span> 
+                    <span style="font-size: 12px; color: var(--text-muted);">Units</span>
+                </td>
+                <td style="font-weight: 700;">₹{{ product.price }}</td>
+               <td>
+    {% if product.quantity <= 0 %}
+        <span class="status-pill status-low" style="background: #FFF0F0; color: #F93C65;">
+            Out of Stock
+        </span>
+
+    {% elif product.threshold and product.quantity <= product.threshold %}
+        <span class="status-pill status-low" style="background: #FFF9E6; color: #FFB700;">
+            Low Stock
+        </span>
+
+    {% else %}
+        <span class="status-pill status-high" style="background: #E6FFF5; color: #00B69B;">
+            In Stock
+        </span>
+    {% endif %}
+</td>
+                
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="7" style="text-align:center; padding:60px; color:var(--text-muted);">
+                    <div style="opacity: 0.5; margin-bottom: 10px;">
+                        <i data-lucide="archive" size="48"></i>
+                    </div>
+                    <p>No products found in the inventory.</p>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const searchInput = document.getElementById('global-search');
+        
+        // 1. Pre-fill the search bar if a query exists
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.has('q')) {
+            searchInput.value = urlParams.get('q');
+            searchInput.focus();
+        }
+
+        // 2. Listen for Enter key on the search bar
+        searchInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                const query = this.value.trim();
+                // Redirect to product list page with the search query
+                // Replace 'product_list' with your actual URL name
+                window.location.href = "{% url 'product_list' %}?q=" + encodeURIComponent(query);
+            }
+        });
+    });
+</script>
+{% endblock %}
+{% endblock %}
